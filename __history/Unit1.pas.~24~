@@ -1,0 +1,160 @@
+unit Unit1;
+
+interface
+
+uses
+  System.SysUtils,
+  System.Types,
+  System.UITypes,
+  System.Classes,
+  System.Variants,
+  System.Hash,
+
+  FMX.Types,
+  FMX.Controls,
+  FMX.Forms,
+  FMX.Graphics,
+  FMX.Dialogs,
+  FMX.Memo.Types,
+  FMX.ScrollBox,
+  FMX.Memo,
+  FMX.StdCtrls,
+  FMX.Edit,
+  FMX.Controls.Presentation, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Error, FireDAC.UI.Intf,
+  FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.PG,
+  FireDAC.Phys.PGDef, FireDAC.ConsoleUI.Wait, FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
+  Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client, FireDAC.Comp.UI, FireDAC.Stan.StorageJSON, System.Rtti,
+  FMX.Grid.Style, FMX.Grid;
+
+type
+  TForm1 = class(TForm)
+    labelCriaSenha: TLabel;
+    EditCriaSenha: TEdit;
+    ButtonCriptoCria: TButton;
+    MemoCripto: TMemo;
+    ButtonCriptoLogin: TButton;
+    MemoCriptoLogin: TMemo;
+    Button_CompararSenhas: TButton;
+    labelDigitaSenhaLogin: TLabel;
+    EditLoginSenha: TEdit;
+    FDStanStorageJSONLink1: TFDStanStorageJSONLink;
+    FDConnection1: TFDConnection;
+    FDPhysPgDriverLink1: TFDPhysPgDriverLink;
+    FDGUIxWaitCursor1: TFDGUIxWaitCursor;
+    FDQuery1: TFDQuery;
+    EditUsuario: TEdit;
+    StringGrid1: TStringGrid;
+    ButtonRefresh: TButton;
+    procedure ButtonCriptoCriaClick(Sender: TObject);
+    procedure Button_CompararSenhasClick(Sender: TObject);
+    procedure ButtonCriptoLoginClick(Sender: TObject);
+    procedure ButtonRefreshClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+  private
+    procedure LoadDataToStringGrid;
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+{$R *.fmx}
+
+procedure TForm1.ButtonCriptoCriaClick(Sender: TObject);
+begin
+  MemoCripto.Lines.Clear;
+  MemoCripto.Lines.Add(THashSHA2.GetHashString(EditCriaSenha.Text+EditUsuario.Text));
+
+  FDQuery1.Close;
+  FDQuery1.Open;
+
+  if FDQuery1.Locate('nome', EditUsuario.Text, []) then
+  begin
+     FDQuery1.Edit;
+  end
+  else
+  begin
+     FDQuery1.Insert;
+     FDQuery1.FieldByName('nome').AsString := EditUsuario.Text;
+  end;
+
+  FDQuery1.FieldByName('senha').Value   :=  MemoCripto.Text;
+  FDQuery1.Post;
+end;
+
+procedure TForm1.ButtonCriptoLoginClick(Sender: TObject);
+begin
+  MemoCriptoLogin.Lines.Clear;
+  MemoCriptoLogin.Lines.Add(THashSHA2.GetHashString(EditLoginSenha.Text+EditUsuario.Text));
+
+  FDQuery1.Close;
+  FDQuery1.Open;
+  if FDQuery1.Locate('nome', EditUsuario.Text, []) then
+  begin
+    if FDQuery1.FieldByName('senha').Value = MemoCriptoLogin.Text then
+      ShowMessage('Usuáro e Senha Válidos, Seja Bem Vindo.')
+    else
+      ShowMessage('Usuáro e Senha Não Encontrado.');
+  end;
+end;
+
+procedure TForm1.ButtonRefreshClick(Sender: TObject);
+begin
+  FDQuery1.Refresh;
+end;
+
+procedure TForm1.LoadDataToStringGrid;
+var
+  i: Integer;
+begin
+  // Limpar o conteúdo atual do StringGrid
+  StringGrid1.RowCount := 0;
+
+  // Abrir o dataset
+  FDQuery1.Open;
+  try
+    // Configurar o número de linhas de acordo com os registros do dataset
+    FDQuery1.First;
+    StringGrid1.RowCount := FDQuery1.RecordCount;
+
+    // Iterar sobre o dataset e preencher o StringGrid
+    i := 0;
+    while not FDQuery1.Eof do
+    begin
+      StringGrid1.Cells[0, i] := FDQuery1.FieldByName('id').AsString;
+      StringGrid1.Cells[1, i] := FDQuery1.FieldByName('nome').AsString;
+      StringGrid1.Cells[2, i] := FDQuery1.FieldByName('senha').AsString;
+      StringGrid1.Cells[3, i] := FDQuery1.FieldByName('last_acesso').AsString;
+
+      // Continue para cada coluna necessária
+
+      Inc(i);
+      FDQuery1.Next;
+    end;
+  finally
+    FDQuery1.Close;
+  end;
+end;
+
+procedure TForm1.Button_CompararSenhasClick(Sender: TObject);
+begin
+  if MemoCripto.Text = MemoCriptoLogin.Text then
+  begin
+    ShowMessage('Senhas Válida, Seja Bem Vindo.')
+  end else
+  begin
+    ShowMessage('Senha Inválida, Tente Novamente.');
+  end;
+
+end;
+
+procedure TForm1.FormShow(Sender: TObject);
+begin
+  LoadDataToStringGrid;
+end;
+
+end.
