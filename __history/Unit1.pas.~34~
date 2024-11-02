@@ -44,15 +44,15 @@ type
     FDGUIxWaitCursor1: TFDGUIxWaitCursor;
     FDQuery1: TFDQuery;
     EditUsuario: TEdit;
-    StringGrid1: TStringGrid;
     ButtonRefresh: TButton;
     BindSourceDB1: TBindSourceDB;
     BindingsList1: TBindingsList;
-    LinkGridToDataSourceBindSourceDB1: TLinkGridToDataSource;
+    StringGrid1: TStringGrid;
     Column1: TColumn;
     Column2: TColumn;
     Column3: TColumn;
     Column4: TColumn;
+    Button1: TButton;
     procedure ButtonCriptoCriaClick(Sender: TObject);
     procedure Button_CompararSenhasClick(Sender: TObject);
     procedure ButtonCriptoLoginClick(Sender: TObject);
@@ -114,6 +114,7 @@ procedure TForm1.ButtonRefreshClick(Sender: TObject);
 begin
   FDQuery1.Close;
   FDQuery1.Open;
+  LoadDataToStringGrid;
 end;
 
 procedure TForm1.LoadDataToStringGrid;
@@ -130,7 +131,6 @@ begin
     FDQuery1.First;
     StringGrid1.RowCount := FDQuery1.RecordCount;
 
-    // Iterar sobre o dataset e preencher o StringGrid
     i := 0;
     while not FDQuery1.Eof do
     begin

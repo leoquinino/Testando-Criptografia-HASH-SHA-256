@@ -24,7 +24,8 @@ uses
   FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.PG,
   FireDAC.Phys.PGDef, FireDAC.ConsoleUI.Wait, FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
   Data.DB, FireDAC.Comp.DataSet, FireDAC.Comp.Client, FireDAC.Comp.UI, FireDAC.Stan.StorageJSON, System.Rtti,
-  FMX.Grid.Style, FMX.Grid;
+  FMX.Grid.Style, FMX.Grid, Data.Bind.EngExt, Fmx.Bind.DBEngExt, Fmx.Bind.Grid, System.Bindings.Outputs,
+  Fmx.Bind.Editors, Data.Bind.Components, Data.Bind.Grid, Data.Bind.DBScope;
 
 type
   TForm1 = class(TForm)
@@ -43,8 +44,14 @@ type
     FDGUIxWaitCursor1: TFDGUIxWaitCursor;
     FDQuery1: TFDQuery;
     EditUsuario: TEdit;
-    StringGrid1: TStringGrid;
     ButtonRefresh: TButton;
+    BindSourceDB1: TBindSourceDB;
+    BindingsList1: TBindingsList;
+    StringGrid1: TStringGrid;
+    Column1: TColumn;
+    Column2: TColumn;
+    Column3: TColumn;
+    Column4: TColumn;
     procedure ButtonCriptoCriaClick(Sender: TObject);
     procedure Button_CompararSenhasClick(Sender: TObject);
     procedure ButtonCriptoLoginClick(Sender: TObject);
@@ -104,7 +111,9 @@ end;
 
 procedure TForm1.ButtonRefreshClick(Sender: TObject);
 begin
-  FDQuery1.Refresh;
+  FDQuery1.Close;
+  FDQuery1.Open;
+  LoadDataToStringGrid;
 end;
 
 procedure TForm1.LoadDataToStringGrid;
@@ -121,7 +130,6 @@ begin
     FDQuery1.First;
     StringGrid1.RowCount := FDQuery1.RecordCount;
 
-    // Iterar sobre o dataset e preencher o StringGrid
     i := 0;
     while not FDQuery1.Eof do
     begin

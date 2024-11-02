@@ -57,6 +57,7 @@ type
     procedure ButtonCriptoLoginClick(Sender: TObject);
     procedure ButtonRefreshClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
   private
     procedure LoadDataToStringGrid;
     { Private declarations }
@@ -158,6 +159,27 @@ begin
     ShowMessage('Senha Inválida, Tente Novamente.');
   end;
 
+end;
+
+procedure TForm1.FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
+begin
+  if StringGrid1.IsFocused then
+  begin
+    Handled := True;
+
+    if WheelDelta > 0 then
+    begin
+      // para cima
+      if StringGrid1.TopRow > 0 then
+        StringGrid1.TopRow := StringGrid1.TopRow - 1;
+    end
+    else
+    begin
+      // para baixo
+      if StringGrid1.TopRow < StringGrid1.RowCount - 1 then
+        StringGrid1.TopRow := StringGrid1.TopRow + 1;
+    end;
+  end;
 end;
 
 procedure TForm1.FormShow(Sender: TObject);
